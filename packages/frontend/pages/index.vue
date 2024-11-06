@@ -1,130 +1,278 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <!-- Header -->
-    <PageHeader @add-server="showAddServerModal = true" />
+  <div class="min-h-screen bg-base-200 p-4">
+    <div class="container mx-auto">
+      <!-- En-tête -->
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Mes serveurs de jeux</h1>
+        <button class="btn btn-primary gap-2" @click="showCreateModal = true">
+          <Icon name="ph:plus-bold" class="w-5 h-5" />
+          Nouveau serveur
+        </button>
+      </div>
 
-    <!-- Main Content -->
-    <main class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      <LoadingState v-if="loading" />
-      <NoUserState v-else-if="!user" />
-      <EmptyState v-else-if="gameServers.length === 0" />
-      <ServerList v-else :servers="gameServers" @refresh="fetchGameServers" />
-    </main>
+      <!-- Liste des serveurs -->
+      <ClientOnly>
+        <div v-if="servers.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ServerCard
+            v-for="server in servers"
+            :key="server.id"
+            :server="server"
+            @start="handleStart"
+            @stop="handleStop"
+            @restart="handleRestart"
+            @delete="handleDelete"
+            @refresh="fetchServers"
+          />
+        </div>
+        <div v-else class="text-center py-12">
+          <!-- État vide -->
+          <div class="mb-4">
+            <Icon name="ph:game-controller-bold" class="w-16 h-16 mx-auto opacity-50" />
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Aucun serveur de jeu</h3>
+          <p class="text-base-content/60 mb-4">
+            Commencez par créer votre premier serveur de jeu
+          </p>
+          <button class="btn btn-primary" @click="showCreateModal = true">
+            Créer un serveur
+          </button>
+        </div>
+      </ClientOnly>
+
+      <!-- Modal de création -->
+      <Modal v-model="showCreateModal" title="Créer un serveur de jeu">
+        <ServerForm
+          :loading="loading"
+          :ssh-servers="sshServers"
+          @submit="handleCreate"
+          @cancel="showCreateModal = false"
+        />
+      </Modal>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { useSupabaseClient } from "#imports";
-import { useRouter } from "vue-router";
+// Imports nécessaires
 import Modal from "~/components/UI/Modal.vue";
+import ServerCard from "~/components/Server/ServerCard.vue";
+import ServerForm from "~/components/Server/ServerForm.vue";
 
-// Composables
+// Middleware d'authentification
+definePageMeta({
+  middleware: "auth",
+});
+
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
-const router = useRouter();
 
-// State
-const showAddServerModal = ref(false);
+// Initialiser les refs avec des valeurs par défaut
+const servers = ref<any[]>([]);
+const sshServers = ref<any[]>([]);
+const showCreateModal = ref(false);
 const loading = ref(false);
-const isLoading = ref(true);
-const sshServers = ref([]);
-const gameServers = ref([]);
 
-// Fetch Methods
+// Fonction utilitaire pour les notifications
+const showNotification = (title: string, description: string, color: 'red' | 'green' | 'yellow' | 'blue') => {
+  const { $ui } = useNuxtApp()
+  if ($ui) {
+    $ui.notify({
+      title,
+      description,
+      color
+    })
+  }
+}
+
+// Fonction pour charger les données initiales
 const fetchSSHServers = async () => {
-  isLoading.value = true;
   try {
+    if (!user.value?.id) return;
+    
     const { data, error } = await supabase
       .from("ssh_servers")
       .select("*")
-      .eq("user_id", user.value?.id)
-      .order("name");
+      .eq("user_id", user.value.id);
 
     if (error) throw error;
     sshServers.value = data || [];
   } catch (err) {
     console.error("Erreur lors du chargement des serveurs SSH:", err);
-  } finally {
-    isLoading.value = false;
+    showNotification(
+      "Erreur",
+      "Erreur lors du chargement des serveurs SSH",
+      "red"
+    );
   }
 };
 
-const fetchGameServers = async () => {
-  if (!user.value?.id) return;
-
-  loading.value = true;
+const fetchServers = async () => {
   try {
+    if (!user.value?.id) return;
+    
     const { data, error } = await supabase
       .from("game_servers")
       .select("*")
-      .eq("user_id", user.value.id)
-      .order("created_at", { ascending: false });
+      .eq("user_id", user.value.id);
 
     if (error) throw error;
-    gameServers.value = data || [];
+    servers.value = data || [];
   } catch (err) {
-    console.error("Erreur lors du chargement des serveurs de jeu:", err);
-  } finally {
-    loading.value = false;
+    console.error("Erreur lors du chargement des serveurs:", err);
+    showNotification(
+      "Erreur",
+      "Erreur lors du chargement des serveurs",
+      "red"
+    );
   }
 };
 
-// Handlers
-const handleAddServer = async (formData) => {
-  if (!user.value?.id) {
-    console.error("Utilisateur non connecté");
-    return;
-  }
-
+// Gérer la création d'un serveur
+const handleCreate = async (formData) => {
   loading.value = true;
   try {
-    const selectedServer = sshServers.value.find(
+    const sshServer = sshServers.value.find(
       (server) => server.id === formData.ssh_server_id
     );
 
-    if (!selectedServer) {
+    if (!sshServer) {
       throw new Error("Serveur SSH non trouvé");
     }
 
-    const { error } = await supabase.from("game_servers").insert([
-      {
-        ...formData,
-        user_id: user.value.id,
-        ip: selectedServer.host,
-      },
-    ]);
+    const { error } = await supabase.from("game_servers").insert({
+      ...formData,
+      user_id: user.value?.id,
+      status: "stopped",
+      ip: sshServer.host,
+    });
 
     if (error) throw error;
 
-    await fetchGameServers();
-    showAddServerModal.value = false;
+    await fetchServers();
+    showCreateModal.value = false;
+    showNotification(
+      "Succès",
+      "Serveur créé avec succès",
+      "green"
+    );
   } catch (err) {
-    console.error("Erreur lors de la création du serveur:", err);
+    console.error("Erreur lors de la cration du serveur:", err);
+    showNotification(
+      "Erreur",
+      "Erreur lors de la création du serveur",
+      "red"
+    );
   } finally {
     loading.value = false;
   }
 };
 
-// Lifecycle
-onMounted(() => {
-  if (user.value) {
-    fetchGameServers();
-  }
-});
-
-// Watchers
-watch(user, (newUser) => {
-  if (newUser) {
-    fetchGameServers();
+const handleNewServer = () => {
+  if (sshServers.value.length === 0) {
+    showNotification(
+      "Attention",
+      "Vous devez d\'abord configurer un serveur SSH",
+      "yellow"
+    );
   } else {
-    gameServers.value = [];
+    showCreateModal.value = true;
   }
-});
+};
 
-watch(showAddServerModal, (newValue) => {
-  if (newValue) {
-    fetchSSHServers();
+// Gérer les actions sur les serveurs
+const handleStart = async (serverId) => {
+  try {
+    const { error } = await supabase
+      .from("game_servers")
+      .update({ status: "running" })
+      .eq("id", serverId);
+
+    if (error) throw error;
+    await fetchServers();
+    showNotification(
+      "Succès",
+      "Serveur démarré avec succès",
+      "green"
+    );
+  } catch (err) {
+    console.error("Erreur lors du démarrage du serveur:", err);
+    showNotification(
+      "Erreur",
+      "Erreur lors du démarrage du serveur",
+      "red"
+    );
   }
+};
+
+const handleStop = async (serverId) => {
+  try {
+    const { error } = await supabase
+      .from("game_servers")
+      .update({ status: "stopped" })
+      .eq("id", serverId);
+
+    if (error) throw error;
+    await fetchServers();
+    showNotification(
+      "Succès",
+      "Serveur arrêté avec succès",
+      "green"
+    );
+  } catch (err) {
+    console.error("Erreur lors de l'arrêt du serveur:", err);
+    showNotification(
+      "Erreur",
+      "Erreur lors de l\'arrêt du serveur",
+      "red"
+    );
+  }
+};
+
+const handleRestart = async (serverId) => {
+  try {
+    await handleStop(serverId);
+    await handleStart(serverId);
+    showNotification(
+      "Succès",
+      "Serveur redémarré avec succès",
+      "green"
+    );
+  } catch (err) {
+    console.error("Erreur lors du redémarrage du serveur:", err);
+    showNotification(
+      "Erreur",
+      "Erreur lors du redémarrage du serveur",
+      "red"
+    );
+  }
+};
+
+const handleDelete = async (serverId) => {
+  try {
+    const { error } = await supabase
+      .from("game_servers")
+      .delete()
+      .eq("id", serverId);
+
+    if (error) throw error;
+    await fetchServers();
+    showNotification(
+      "Succès",
+      "Serveur supprimé avec succès",
+      "green"
+    );
+  } catch (err) {
+    console.error("Erreur lors de la suppression du serveur:", err);
+    showNotification(
+      "Erreur",
+      "Erreur lors de la suppression du serveur",
+      "red"
+    );
+  }
+};
+
+// Charger les données uniquement côté client
+onMounted(async () => {
+  await Promise.all([fetchServers(), fetchSSHServers()]);
 });
 </script>

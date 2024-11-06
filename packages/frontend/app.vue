@@ -1,17 +1,15 @@
 <template>
   <div>
-    <!-- Afficher la Navbar seulement si l'utilisateur est connecté -->
-    <LayoutNavbar  v-if="user" />
-    
-    <!-- Contenu principal -->
-    <main>
+    <Navbar />
+    <div>
       <NuxtPage />
-    </main>
+      <UNotifications />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const user = useSupabaseUser()
+import Navbar from '~/components/Layout/Navbar.vue'
 </script>
 
 <style>

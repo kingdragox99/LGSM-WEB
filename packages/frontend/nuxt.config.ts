@@ -26,6 +26,7 @@ export default defineNuxtConfig({
 
   // Modules recommandés pour LGSM-WEB
   modules: [
+    '@nuxt/ui',
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
     '@nuxtjs/supabase',
@@ -60,5 +61,14 @@ export default defineNuxtConfig({
     '/login': { ssr: false }
   },
 
-  devtools: { enabled: true }
+  devtools: { enabled: true },
+
+  ui: {
+    notifications: {
+      position: 'top-right',
+      default: {
+        timeout: 5000
+      }
+    }
+  }
 }) 

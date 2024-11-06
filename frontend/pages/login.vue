@@ -6,7 +6,7 @@
       <div class="text-center">
         <h2 class="mt-6 text-3xl font-bold">LGSM-WEB</h2>
         <p class="mt-2 text-base-content/60">
-          {{ isLogin ? $t('auth.loginTitle') : $t('auth.registerTitle') }}
+          {{ isLogin ? $t("auth.loginTitle") : $t("auth.registerTitle") }}
         </p>
       </div>
     </div>
@@ -18,7 +18,7 @@
             <!-- Email -->
             <div class="form-control">
               <label class="label">
-                <span class="label-text">{{ $t('auth.email') }}</span>
+                <span class="label-text">{{ $t("auth.email") }}</span>
               </label>
               <input
                 v-model="formData.email"
@@ -32,10 +32,13 @@
 
             <!-- Mot de passe -->
             <div class="form-control">
-              <label class="label">
-                <span class="label-text">{{ $t('auth.password') }}</span>
-                <span v-if="!isLogin" class="label-text-alt text-base-content/60">
-                  {{ $t('auth.passwordMinLength') }}
+              <label class="label flex flex-col items-start">
+                <span class="label-text">{{ $t("auth.password") }}</span>
+                <span
+                  v-if="!isLogin"
+                  class="label-text-alt text-base-content/60"
+                >
+                  {{ $t("auth.passwordRequirements") }}
                 </span>
               </label>
               <div class="relative">
@@ -44,7 +47,9 @@
                   :type="showPassword ? 'text' : 'password'"
                   placeholder="••••••••"
                   class="input input-bordered w-full pr-10"
-                  :class="{ 'input-error': error && error.includes('password') }"
+                  :class="{
+                    'input-error': error && error.includes('password'),
+                  }"
                   required
                 />
                 <button
@@ -62,18 +67,18 @@
             </div>
 
             <!-- Message de succès/erreur -->
-            <div 
-              v-if="error || success" 
+            <div
+              v-if="error || success"
               class="alert shadow-lg mb-4"
               :class="{
                 'alert-error': !success,
-                'alert-success': success
+                'alert-success': success,
               }"
             >
               <div class="flex items-center gap-2">
-                <Icon 
-                  :name="success ? 'ph:check-circle-bold' : 'ph:warning-bold'" 
-                  class="h-6 w-6 flex-shrink-0" 
+                <Icon
+                  :name="success ? 'ph:check-circle-bold' : 'ph:warning-bold'"
+                  class="h-6 w-6 flex-shrink-0"
                 />
                 <span class="text-sm">{{ success || error }}</span>
               </div>
@@ -86,7 +91,7 @@
               :class="{ loading: loading }"
               :disabled="loading"
             >
-              {{ isLogin ? $t('auth.login') : $t('auth.register') }}
+              {{ isLogin ? $t("auth.login") : $t("auth.register") }}
             </button>
 
             <!-- Lien de basculement -->
@@ -96,7 +101,7 @@
                 class="btn btn-link"
                 @click="isLogin = !isLogin"
               >
-                {{ isLogin ? $t('auth.register') : $t('auth.login') }}
+                {{ isLogin ? $t("auth.register") : $t("auth.login") }}
               </button>
             </div>
           </form>
@@ -109,6 +114,7 @@
 <script setup lang="ts">
 const supabase = useSupabaseClient();
 const router = useRouter();
+const { t } = useI18n();
 
 const isLogin = ref(true);
 const loading = ref(false);
@@ -120,6 +126,16 @@ const formData = reactive({
   email: "",
   password: "",
 });
+
+// Ajouter cette fonction de validation
+const isStrongPassword = (password: string): boolean => {
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>?/`~]/.test(password);
+  
+  return hasLowerCase && hasUpperCase && hasNumber && hasSpecialChar;
+};
 
 const handleSubmit = async () => {
   loading.value = true;
@@ -135,7 +151,7 @@ const handleSubmit = async () => {
 
       if (authError) {
         if (authError.message === "Invalid login credentials") {
-          throw new Error("Email ou mot de passe incorrect");
+          throw new Error(t('auth.errors.invalidCredentials'));
         }
         throw authError;
       }
@@ -144,37 +160,50 @@ const handleSubmit = async () => {
         router.push("/");
       }
     } else {
-      if (formData.password.length < 6) {
-        throw new Error("Le mot de passe doit contenir au moins 6 caractères");
+      if (formData.password.length < 8) {
+        throw new Error(t('auth.errors.passwordLength'));
+      }
+
+      if (!isStrongPassword(formData.password)) {
+        throw new Error(t('auth.errors.passwordRequirements'));
       }
 
       const { data, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/login`,
+          emailRedirectTo: new URL('/login', window.location.origin).toString(),
+          data: {
+            email: formData.email,
+          }
         },
       });
 
       if (authError) {
-        if (authError.message.includes("User already registered")) {
-          throw new Error("Cet email est déjà utilisé");
+        console.error('Détails de l\'erreur:', authError);
+        
+        switch (authError.message) {
+          case "User already registered":
+          case "Email already taken":
+            throw new Error(t('auth.errors.emailTaken'));
+          case "Email rate limit exceeded":
+            throw new Error(t('auth.errors.rateLimit'));
+          case "Password should contain at least one character of each":
+            throw new Error(t('auth.errors.passwordRequirements'));
+          default:
+            throw new Error(`${t('auth.errors.default')} (${authError.message})`);
         }
-        throw authError;
       }
 
       if (data?.user) {
-        success.value = "Un email de confirmation vous a été envoyé.";
+        success.value = t('auth.success.confirmationEmail');
         formData.email = "";
         formData.password = "";
       }
     }
   } catch (err) {
     console.error("Erreur d'authentification:", err);
-    error.value =
-      err instanceof Error
-        ? err.message
-        : "Une erreur est survenue lors de l'authentification";
+    error.value = err instanceof Error ? err.message : t('auth.errors.default');
   } finally {
     loading.value = false;
   }

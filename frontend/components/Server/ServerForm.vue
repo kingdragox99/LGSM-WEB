@@ -232,7 +232,27 @@ const getDefaultPort = (game: string) => {
   return defaultPorts[game] || "";
 };
 
+// Ajouter une validation pour le port
+const validatePort = (port: number): boolean => {
+  return port >= 1024 && port <= 65535;
+};
+
 const handleSubmit = () => {
+  if (!form.ssh_server_id) {
+    showNotification("common.error", "notifications.ssh.required", "red");
+    return;
+  }
+
+  if (!form.game) {
+    showNotification("common.error", "notifications.game.required", "red");
+    return;
+  }
+
+  if (!validatePort(form.port)) {
+    showNotification("common.error", "notifications.port.invalid", "red");
+    return;
+  }
+
   emit("submit", { ...form });
 };
 

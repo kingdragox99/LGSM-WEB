@@ -20,7 +20,19 @@
     "showPassword": "Afficher le mot de passe",
     "loginTitle": "Connectez-vous à votre compte",
     "registerTitle": "Créez votre compte",
-    "passwordMinLength": "Min. 6 caractères"
+    "passwordRequirements": "Min. 8 caractères les Maj et des Min et minimum un caractère spécial",
+    "errors": {
+      "invalidCredentials": "Email ou mot de passe incorrect",
+      "passwordLength": "Le mot de passe doit contenir au moins 8 caractères",
+      "emailTaken": "Cet email est déjà utilisé",
+      "rateLimit": "Trop de tentatives, veuillez réessayer plus tard",
+      "default": "Une erreur est survenue lors de l'authentification",
+      "emailNotAuthorized": "Cette adresse email n'est pas autorisée. Veuillez utiliser une autre adresse email.",
+      "passwordRequirements": "Le mot de passe doit contenir au moins : une minuscule, une majuscule, un chiffre et un caractère spécial"
+    },
+    "success": {
+      "confirmationEmail": "Un email de confirmation vous a été envoyé."
+    }
   },
   "servers": {
     "gameServers": {

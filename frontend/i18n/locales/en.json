@@ -20,7 +20,19 @@
     "showPassword": "Show password",
     "loginTitle": "Sign in to your account",
     "registerTitle": "Create your account",
-    "passwordMinLength": "Min. 6 characters"
+    "passwordRequirements": "Min. 8 characters the Shift and Min and minimum a special character",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "passwordLength": "Password must be at least 8 characters long",
+      "emailTaken": "This email is already in use",
+      "rateLimit": "Too many attempts, please try again later",
+      "default": "An error occurred during authentication",
+      "emailNotAuthorized": "This email address is not authorized. Please use a different email address.",
+      "passwordRequirements": "Password must contain at least: one lowercase letter, one uppercase letter, one number, and one special character"
+    },
+    "success": {
+      "confirmationEmail": "A confirmation email has been sent."
+    }
   },
   "servers": {
     "gameServers": {

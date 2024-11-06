@@ -1,0 +1,50 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "confirm": "Confirmer",
+    "actions": "Actions"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "register": "Créer un compte",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "loginTitle": "Connectez-vous à votre compte",
+    "registerTitle": "Créez votre compte",
+    "passwordMinLength": "Min. 6 caractères"
+  },
+  "servers": {
+    "gameServers": {
+      "title": "Mes serveurs de jeux",
+      "new": "Nouveau serveur",
+      "create": "Créer un serveur",
+      "name": "Nom du serveur",
+      "game": "Jeu",
+      "searchGame": "Rechercher un jeu...",
+      "port": "Port",
+      "status": {
+        "running": "En cours",
+        "stopped": "Arrêté"
+      },
+      "actions": {
+        "start": "Démarrer",
+        "stop": "Arrêter",
+        "restart": "Redémarrer",
+        "delete": "Supprimer"
+      },
+      "noServers": {
+        "title": "Aucun serveur de jeu",
+        "description": "Commencez par créer votre premier serveur de jeu"
+      }
+    }
+  }
+}

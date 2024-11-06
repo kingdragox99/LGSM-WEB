@@ -1,0 +1,50 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "confirm": "Confirm",
+    "actions": "Actions"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "showPassword": "Show password",
+    "loginTitle": "Sign in to your account",
+    "registerTitle": "Create your account",
+    "passwordMinLength": "Min. 6 characters"
+  },
+  "servers": {
+    "gameServers": {
+      "title": "My Game Servers",
+      "new": "New Server",
+      "create": "Create Server",
+      "name": "Server Name",
+      "game": "Game",
+      "searchGame": "Search for a game...",
+      "port": "Port",
+      "status": {
+        "running": "Running",
+        "stopped": "Stopped"
+      },
+      "actions": {
+        "start": "Start",
+        "stop": "Stop",
+        "restart": "Restart",
+        "delete": "Delete"
+      },
+      "noServers": {
+        "title": "No Game Servers",
+        "description": "Start by creating your first game server"
+      }
+    }
+  }
+}

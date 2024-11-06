@@ -6,7 +6,7 @@
       <div class="text-center">
         <h2 class="mt-6 text-3xl font-bold">LGSM-WEB</h2>
         <p class="mt-2 text-base-content/60">
-          {{ isLogin ? "Connectez-vous à votre compte" : "Créez votre compte" }}
+          {{ isLogin ? $t('auth.loginTitle') : $t('auth.registerTitle') }}
         </p>
       </div>
     </div>
@@ -18,12 +18,12 @@
             <!-- Email -->
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Email</span>
+                <span class="label-text">{{ $t('auth.email') }}</span>
               </label>
               <input
                 v-model="formData.email"
                 type="email"
-                placeholder="email@exemple.com"
+                :placeholder="$t('auth.email')"
                 class="input input-bordered w-full"
                 :class="{ 'input-error': error && error.includes('email') }"
                 required
@@ -33,9 +33,9 @@
             <!-- Mot de passe -->
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Mot de passe</span>
+                <span class="label-text">{{ $t('auth.password') }}</span>
                 <span v-if="!isLogin" class="label-text-alt text-base-content/60">
-                  Min. 6 caractères
+                  {{ $t('auth.passwordMinLength') }}
                 </span>
               </label>
               <div class="relative">
@@ -44,13 +44,14 @@
                   :type="showPassword ? 'text' : 'password'"
                   placeholder="••••••••"
                   class="input input-bordered w-full pr-10"
-                  :class="{ 'input-error': error && error.includes('mot de passe') }"
+                  :class="{ 'input-error': error && error.includes('password') }"
                   required
                 />
                 <button
                   type="button"
                   class="absolute inset-y-0 right-0 pr-3 flex items-center"
                   @click="showPassword = !showPassword"
+                  :title="$t('auth.showPassword')"
                 >
                   <Icon
                     :name="showPassword ? 'ph:eye-slash' : 'ph:eye'"
@@ -85,7 +86,7 @@
               :class="{ loading: loading }"
               :disabled="loading"
             >
-              {{ isLogin ? "Se connecter" : "Créer un compte" }}
+              {{ isLogin ? $t('auth.login') : $t('auth.register') }}
             </button>
 
             <!-- Lien de basculement -->
@@ -95,7 +96,7 @@
                 class="btn btn-link"
                 @click="isLogin = !isLogin"
               >
-                {{ isLogin ? "Créer un compte" : "Se connecter" }}
+                {{ isLogin ? $t('auth.register') : $t('auth.login') }}
               </button>
             </div>
           </form>

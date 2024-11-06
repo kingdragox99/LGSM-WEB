@@ -72,30 +72,39 @@
       <div class="flex justify-end gap-2">
         <div class="join">
           <button
-            @click="emit('start', server.id)"
+            @click="handleStart"
             class="btn btn-sm join-item"
-            :class="{ 'btn-success': server.status !== 'running' }"
-            :disabled="server.status === 'running'"
+            :class="{ 
+              'btn-success': server.status !== 'running',
+              'loading': isLoading && currentAction === 'start'
+            }"
+            :disabled="server.status === 'running' || (isLoading && currentAction !== 'start')"
           >
-            <Icon name="ph:play-fill" class="h-4 w-4" />
+            <Icon v-if="!(isLoading && currentAction === 'start')" name="ph:play-fill" class="h-4 w-4" />
           </button>
 
           <button
-            @click="emit('stop', server.id)"
+            @click="handleStop"
             class="btn btn-sm join-item"
-            :class="{ 'btn-error': server.status !== 'stopped' }"
-            :disabled="server.status === 'stopped'"
+            :class="{ 
+              'btn-error': server.status !== 'stopped',
+              'loading': isLoading && currentAction === 'stop'
+            }"
+            :disabled="server.status === 'stopped' || (isLoading && currentAction !== 'stop')"
           >
-            <Icon name="ph:stop-fill" class="h-4 w-4" />
+            <Icon v-if="!(isLoading && currentAction === 'stop')" name="ph:stop-fill" class="h-4 w-4" />
           </button>
 
           <button
-            @click="emit('restart', server.id)"
+            @click="handleRestart"
             class="btn btn-sm join-item"
-            :class="{ 'btn-warning': server.status !== 'stopped' }"
-            :disabled="server.status === 'stopped'"
+            :class="{ 
+              'btn-warning': server.status !== 'stopped',
+              'loading': isLoading && currentAction === 'restart'
+            }"
+            :disabled="server.status === 'stopped' || (isLoading && currentAction !== 'restart')"
           >
-            <Icon name="ph:arrows-clockwise-bold" class="h-4 w-4" />
+            <Icon v-if="!(isLoading && currentAction === 'restart')" name="ph:arrows-clockwise-bold" class="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -122,6 +131,10 @@ const props = defineProps<{
 const supabase = useSupabaseClient();
 const sshServerName = ref("");
 const copied = ref(false);
+
+// Ajout des états locaux pour le chargement
+const isLoading = ref(false);
+const currentAction = ref<'start' | 'stop' | 'restart' | null>(null);
 
 // Définir les émissions d'événements avec les paramètres corrects
 const emit = defineEmits<{
@@ -183,6 +196,49 @@ const copyToClipboard = async () => {
     }, 2000);
   } catch (err) {
     console.error("Erreur lors de la copie:", err);
+  }
+};
+
+// Gestionnaires d'événements modifiés
+const handleStart = async () => {
+  if (isLoading.value) return;
+  
+  currentAction.value = 'start';
+  isLoading.value = true;
+  
+  try {
+    await emit('start', props.server.id);
+  } finally {
+    isLoading.value = false;
+    currentAction.value = null;
+  }
+};
+
+const handleStop = async () => {
+  if (isLoading.value) return;
+  
+  currentAction.value = 'stop';
+  isLoading.value = true;
+  
+  try {
+    await emit('stop', props.server.id);
+  } finally {
+    isLoading.value = false;
+    currentAction.value = null;
+  }
+};
+
+const handleRestart = async () => {
+  if (isLoading.value) return;
+  
+  currentAction.value = 'restart';
+  isLoading.value = true;
+  
+  try {
+    await emit('restart', props.server.id);
+  } finally {
+    isLoading.value = false;
+    currentAction.value = null;
   }
 };
 </script>

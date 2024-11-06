@@ -189,7 +189,7 @@ const handleNewServer = () => {
 };
 
 // Gérer les actions sur les serveurs
-const handleStart = async (serverId) => {
+const handleStart = async (serverId: string) => {
   try {
     const { error } = await supabase
       .from("game_servers")
@@ -197,7 +197,14 @@ const handleStart = async (serverId) => {
       .eq("id", serverId);
 
     if (error) throw error;
-    await fetchServers();
+    
+    // Mettre à jour uniquement le serveur concerné
+    servers.value = servers.value.map(server => 
+      server.id === serverId 
+        ? { ...server, status: "running" }
+        : server
+    );
+
     showNotification(
       "Succès",
       "Serveur démarré avec succès",
@@ -210,10 +217,11 @@ const handleStart = async (serverId) => {
       "Erreur lors du démarrage du serveur",
       "red"
     );
+    throw err;
   }
 };
 
-const handleStop = async (serverId) => {
+const handleStop = async (serverId: string) => {
   try {
     const { error } = await supabase
       .from("game_servers")
@@ -221,7 +229,14 @@ const handleStop = async (serverId) => {
       .eq("id", serverId);
 
     if (error) throw error;
-    await fetchServers();
+    
+    // Mettre à jour uniquement le serveur concerné
+    servers.value = servers.value.map(server => 
+      server.id === serverId 
+        ? { ...server, status: "stopped" }
+        : server
+    );
+
     showNotification(
       "Succès",
       "Serveur arrêté avec succès",
@@ -231,16 +246,32 @@ const handleStop = async (serverId) => {
     console.error("Erreur lors de l'arrêt du serveur:", err);
     showNotification(
       "Erreur",
-      "Erreur lors de l\'arrêt du serveur",
+      "Erreur lors de l'arrêt du serveur",
       "red"
     );
+    throw err;
   }
 };
 
-const handleRestart = async (serverId) => {
+const handleRestart = async (serverId: string) => {
   try {
+    // Mettre à jour le statut localement pour le redémarrage
+    servers.value = servers.value.map(server => 
+      server.id === serverId 
+        ? { ...server, status: "stopped" }
+        : server
+    );
+    
     await handleStop(serverId);
+    
+    servers.value = servers.value.map(server => 
+      server.id === serverId 
+        ? { ...server, status: "running" }
+        : server
+    );
+    
     await handleStart(serverId);
+    
     showNotification(
       "Succès",
       "Serveur redémarré avec succès",
@@ -253,10 +284,11 @@ const handleRestart = async (serverId) => {
       "Erreur lors du redémarrage du serveur",
       "red"
     );
+    throw err;
   }
 };
 
-const handleDelete = async (serverId) => {
+const handleDelete = async (serverId: string) => {
   try {
     const { error } = await supabase
       .from("game_servers")
@@ -264,7 +296,10 @@ const handleDelete = async (serverId) => {
       .eq("id", serverId);
 
     if (error) throw error;
-    await fetchServers();
+    
+    // Supprimer le serveur de la liste locale
+    servers.value = servers.value.filter(server => server.id !== serverId);
+    
     showNotification(
       "Succès",
       "Serveur supprimé avec succès",

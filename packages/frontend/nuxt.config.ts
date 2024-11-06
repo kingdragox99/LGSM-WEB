@@ -65,10 +65,28 @@ export default defineNuxtConfig({
 
   ui: {
     notifications: {
+      // Position des notifications
       position: 'top-right',
+      // Configuration par défaut
       default: {
-        timeout: 5000
-      }
-    }
-  }
+        timeout: 5000,
+        showIcon: true,
+      },
+      // Styles pour chaque type de notification
+      notifications: {
+        success: {
+          color: 'green',
+        },
+        error: {
+          color: 'red',
+        },
+        warning: {
+          color: 'yellow',
+        },
+        info: {
+          color: 'blue',
+        },
+      },
+    },
+  },
 }) 

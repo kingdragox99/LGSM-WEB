@@ -48,6 +48,8 @@
           @cancel="showCreateModal = false"
         />
       </Modal>
+
+      <UNotifications />
     </div>
   </div>
 </template>
@@ -72,14 +74,21 @@ const sshServers = ref<any[]>([]);
 const showCreateModal = ref(false);
 const loading = ref(false);
 
+const toast = useToast()
+
 // Fonction utilitaire pour les notifications
 const showNotification = (title: string, description: string, color: 'red' | 'green' | 'yellow' | 'blue') => {
-  const { $ui } = useNuxtApp()
-  if ($ui) {
-    $ui.notify({
+  if (process.client) {
+    toast.add({
+      id: Date.now(),
       title,
       description,
-      color
+      color,
+      icon: color === 'red' ? 'i-heroicons-x-circle' 
+           : color === 'green' ? 'i-heroicons-check-circle'
+           : color === 'yellow' ? 'i-heroicons-exclamation-triangle'
+           : 'i-heroicons-information-circle',
+      timeout: 5000
     })
   }
 }

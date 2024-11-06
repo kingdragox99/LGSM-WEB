@@ -1,5 +1,19 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="space-y-4">
+  <!-- Afficher un message si aucun serveur SSH n'est configuré -->
+  <div v-if="!sshServers || sshServers.length === 0" class="text-center py-8">
+    <Icon name="ph:terminal-window-bold" class="w-16 h-16 mx-auto text-base-content/40 mb-4" />
+    <h3 class="text-lg font-semibold mb-2">Aucun serveur SSH configuré</h3>
+    <p class="text-base-content/60 mb-4">
+      Vous devez d'abord configurer un serveur SSH pour pouvoir créer un serveur de jeu
+    </p>
+    <NuxtLink to="/settings" class="btn btn-primary">
+      <Icon name="ph:plus-bold" class="w-5 h-5 mr-2" />
+      Configurer un serveur SSH
+    </NuxtLink>
+  </div>
+
+  <!-- Afficher le formulaire uniquement si des serveurs SSH sont disponibles -->
+  <form v-else @submit.prevent="handleSubmit" class="space-y-4">
     <!-- Nom du serveur -->
     <div class="form-control">
       <label class="label">
@@ -221,6 +235,9 @@ const getDefaultPort = (game: string) => {
 const handleSubmit = () => {
   emit("submit", { ...form });
 };
+
+// Vérifier la présence de serveurs SSH
+const hasSSHServers = computed(() => props.sshServers && props.sshServers.length > 0)
 </script>
 
 <style scoped>

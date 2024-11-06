@@ -4,7 +4,7 @@
       <!-- En-tête -->
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Mes serveurs de jeux</h1>
-        <button class="btn btn-primary gap-2" @click="showCreateModal = true">
+        <button class="btn btn-primary gap-2" @click="handleNewServer">
           <Icon name="ph:plus-bold" class="w-5 h-5" />
           Nouveau serveur
         </button>
@@ -33,7 +33,7 @@
           <p class="text-base-content/60 mb-4">
             Commencez par créer votre premier serveur de jeu
           </p>
-          <button class="btn btn-primary" @click="showCreateModal = true">
+          <button class="btn btn-primary" @click="handleNewServer">
             Créer un serveur
           </button>
         </div>
@@ -176,16 +176,21 @@ const handleCreate = async (formData) => {
   }
 };
 
+// Gérer l'ouverture du modal
 const handleNewServer = () => {
-  if (sshServers.value.length === 0) {
+  if (!sshServers.value?.length) {
     showNotification(
-      "Attention",
-      "Vous devez d\'abord configurer un serveur SSH",
+      "Configuration requise",
+      "Vous devez d'abord configurer un serveur SSH",
       "yellow"
     );
-  } else {
-    showCreateModal.value = true;
+    // Rediriger vers la page des paramètres après un court délai
+    setTimeout(() => {
+      navigateTo('/settings');
+    }, 1500);
+    return;
   }
+  showCreateModal.value = true;
 };
 
 // Gérer les actions sur les serveurs
